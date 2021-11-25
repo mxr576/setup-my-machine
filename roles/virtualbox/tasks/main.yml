@@ -1,0 +1,21 @@
+---
+# tasks file for virtualbox
+
+- name: Search current virtualbox version
+  uri:
+    url: https://release-monitoring.org/api/project/14449
+    return_content: true
+  register: register_version
+  delegate_to: localhost
+
+- name: Set current Virtualbox version
+  set_fact:
+    current_version: "{{ register_version.json['version'] }}"
+
+- include: install_Ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+
+- include: configure.yml
+
+- include: extensions.yml
+  when: install_extpacks

@@ -1,0 +1,58 @@
+---
+###
+# Inspired by https://github.com/henriklynggaard/ansible-role-phpstorm that does not work
+# anymore, and does not cover edge cases like plugins distributed in archieves vs JARs.
+###
+
+# - name: Find PHPStorm build number
+#   shell: snap info phpstorm | grep installed | awk '{print $2}'
+#   register: snap_phpstorm_version
+
+# - name: Set phpstorm_version number
+#   set_fact:
+#     phpstorm_version: "{{ snap_phpstorm_version.stdout }}"
+
+# Ansible's json_query requires jmespath Python library. The catch 42 here that if jmespath
+# gets installed by this Ansible role then Ansible still reports it as missing in the current
+# execution, therefore it is easier to use JQ.
+- name: Ensure jq installed
+  ansible.builtin.apt:
+    name:
+      - jq
+    state: present
+  become: true
+
+- name: Read Phpstorm product info
+  shell: jq -r .dataDirectoryName /snap/phpstorm/current/product-info.json
+  register: phpstorm_product_info
+
+- name: Set PHPStorm plugin directory name
+  # This does not work if the IDE has not started yet
+  # shell: cd ~/.local/share/JetBrains && ls -td -- */ | head -n 1 | cut -d'/' -f1
+  set_fact:
+    phpstorm_directory_name: "{{ phpstorm_product_info.stdout}}"
+
+- name: Ensure PHPStorm plugin directory exists
+  ansible.builtin.file:
+    path: "{{ phpstorm_plugin_directory }}"
+    state: directory
+    mode: '0775'
+
+- name: Download PHPStorm plugins (shipped as archieves)
+  ansible.builtin.get_url:
+    url: "{{ phpstorm_plugin_download_mirror }}{{ item }}"
+    dest: "{{ phpstorm_download_directory }}"
+  register: phpstorm_plugin_archieves_downloaded
+  with_items: "{{ phpstorm_plugins_as_archieves }}"
+
+- name: Install PHPStorm Plugins (distributed in archieves)
+  unarchive:
+    src: "{{ item.dest }}"
+    dest: "{{ phpstorm_plugin_directory }}"
+  with_items: "{{ phpstorm_plugin_archieves_downloaded.results }}"
+
+- name: Download PHPStorm plugins (distributed as JARs)
+  ansible.builtin.get_url:
+    url: "{{ phpstorm_plugin_download_mirror }}{{ item }}"
+    dest: "{{ phpstorm_plugin_directory }}"
+  with_items: "{{ phpstorm_plugins_as_jars }}"

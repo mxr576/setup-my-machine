@@ -1,0 +1,13 @@
+---
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+  vars:
+    docker_users:
+      - "{{ ansible_user_id }}"
+    install_additional_browsers: true
+    setup_yubikey_gpg_for_ssh: true
+    git_username: "John Deo"
+    git_email: "john.doe@example.com"
+    git_signingkey: "no7j3M9mJvGn7HYbUoI2ToOT"

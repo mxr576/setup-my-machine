@@ -1,0 +1,13 @@
+---
+# vars file for virtualbox
+
+# Packages to allow apt over https
+ubuntu_prereq_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+  - build-essential
+  - gcc
+  - dkms

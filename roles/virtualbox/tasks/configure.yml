@@ -1,0 +1,21 @@
+---
+# configure task for virtualbox
+
+- name: check kernel module status
+  command: /usr/lib/virtualbox/vboxdrv.sh status
+  register: vboxdrv_status
+  changed_when: False
+
+- name: rebuild kernel modules
+  command: /usr/lib/virtualbox/vboxdrv.sh setup
+  when: "'is loaded' not in vboxdrv_status.stdout"
+  become: yes
+
+- name: setup VirtualBox user
+  user:
+      name: "{{ item }}"
+      groups: vboxusers
+      append: yes
+  with_items: "{{ vbox_users }}"
+  when: setup_users
+  become: yes

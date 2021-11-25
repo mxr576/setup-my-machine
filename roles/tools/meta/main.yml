@@ -1,0 +1,43 @@
+---
+dependencies:
+  - role: gantsign.antigen
+    users:
+      - username: "{{ ansible_user_id }}"
+        antigen_libraries:
+          - name: oh-my-zsh
+        antigen_theme:
+          name: romkatv/powerlevel10k
+        antigen_bundles:
+          # Bundles from the default repo (robbyrussell's oh-my-zsh).
+          - name: git
+          - name: common-aliases
+          - name: copydir
+          - name: copyfile
+          - name: cp
+          - name: docker
+          - name: docker-compose
+          - name: dotenv
+          - name: extract
+          - name: git-flow-avh
+          - name: httpie
+          - name: jsontools
+          - name: rsync
+          - name: screen
+          - name: sublime
+          - name: zsh-autosuggestions
+          - name: zsh-syntax-highlighting # `name` is required (any valid file name will do so long as it's unique for the bundles)
+            url: zsh-users/zsh-syntax-highlighting
+          - name: powerlevel10k
+            url: romkatv/powerlevel10k.git
+
+  - role: geerlingguy.clamav
+    become: true
+
+  - role: virtualbox
+    vars:
+      # TODO This also requires a system restart.
+      vbox_users:
+        - "{{ ansible_user_id }}"
+      install_extpacks: yes
+      virtualbox_version: 6.1
+      virtualbox_version_full: "6.1.30"

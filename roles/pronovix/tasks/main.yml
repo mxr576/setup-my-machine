@@ -1,0 +1,40 @@
+---
+
+- name: Ensure apt dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - owncloud-client
+    state: present
+  become: true
+
+- name: Ensure snap dependencies are installed that does not require --classic
+  community.general.snap:
+    name:
+      - lagoon-cli
+    classic: yes
+  become: true
+
+- name: "GIT: Force GPG signed commits"
+  community.general.git_config:
+    name: commit.gpgsign
+    scope: global
+    value: "true"
+
+- name: "GIT: GPG signing on push if asked"
+  community.general.git_config:
+    name: push.gpgsign
+    scope: global
+    value: if-asked
+
+- name: "GIT: Set GPG bin location"
+  community.general.git_config:
+    name: gpg.program
+    scope: global
+    value: /usr/bin/gpg
+
+- name: "GIT: Configure GPG signing key"
+  community.general.git_config:
+    name: user.signingkey
+    scope: global
+    value: "{{ git_signingkey }}"
+  when: git_signingkey

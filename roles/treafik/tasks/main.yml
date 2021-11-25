@@ -1,0 +1,32 @@
+---
+
+- name: Create the web network
+  docker_network:
+    name: web
+  # Until the system has not been restarted the current user do not have access
+  # to use Docker cli.
+  become: true
+
+- name: Create the traefik container
+  docker_container:
+    name: traefik
+    image: traefik:2.2
+    restart_policy: unless-stopped
+    recreate: true
+    command: --api.insecure=true --providers.docker
+    networks:
+      - name: web
+    ports:
+      - "80:80"
+      - "443:443"
+      - '8080:8080'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik.rule: "Host(`treafik.test`)"
+      traefik.port: "8080"
+      traefik.http.services.treafik.loadbalancer.server.port: "8080"
+  # Until the system has not been restarted the current user do not have access
+  # to use Docker cli.
+  become: true

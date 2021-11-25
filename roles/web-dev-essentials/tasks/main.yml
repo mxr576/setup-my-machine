@@ -1,0 +1,19 @@
+---
+- name: Ensure apt dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - firefox
+      - git
+      - gitk
+      - httpie
+      - meld
+      - snapd
+    state: present
+  become: true
+
+- name: Ensure snap dependencies are installed that requires --classic
+  community.general.snap:
+    name:
+      - phpstorm
+    classic: yes
+  become: true

@@ -1,0 +1,31 @@
+---
+dependencies:
+  - role: geerlingguy.docker
+    become: true
+
+  # Required to run Docker commands with Ansible
+  - role: geerlingguy.pip
+    vars:
+      pip_install_packages:
+      - name: docker
+        state: latest
+    become: true
+
+  - role: weareinteractive.ufw
+    become: true
+    vars:
+      ufw_rules:
+      # Default IP of docker0 is hardcoded, should we identify this dynamically?
+      - rule: allow
+        comment: "Docker: Allow xDebug 2 connection"
+        to_ip: 172.17.0.1
+        to_port: 9001
+      - rule: allow
+        comment: "Docker: Allow xDebug 3 connection"
+        to_ip: 172.17.0.1
+        to_port: 9003
+
+  - role: darkwizard242.googlechrome
+    become: true
+    vars:
+      googlechrome_desired_state: latest

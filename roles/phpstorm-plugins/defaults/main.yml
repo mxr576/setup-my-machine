@@ -1,0 +1,25 @@
+---
+phpstorm_download_mirror: https://download.jetbrains.com/webide/
+phpstorm_plugin_download_mirror: "https://plugins.jetbrains.com/plugin/download?updateId="
+# There is no way to download the latest version of a plugin. :-(
+# https://plugins.jetbrains.com/docs/marketplace/plugin-update-download.html#2-download-a-specified-version-of-the-plugin
+phpstorm_plugins_as_archieves:
+  # https://plugins.jetbrains.com/plugin/9792-key-promoter-x
+  - 143746
+  # https://plugins.jetbrains.com/plugin/7219-symfony-support
+  - 136209
+  # https://plugins.jetbrains.com/plugin/7320-php-annotations
+  - 108480
+  # https://plugins.jetbrains.com/plugin/7495--ignore
+  - 141256
+  # https://plugins.jetbrains.com/plugin/7017-plantuml-integration
+  - 143728
+phpstorm_plugins_as_jars:
+  # https://plugins.jetbrains.com/plugin/9525--env-files-support
+  - 130197
+  # https://plugins.jetbrains.com/plugin/7622-php-inspections-ea-extended-
+  - 122694
+phpstorm_download_directory: /tmp
+# phpstorm_plugin_directory: "~/.local/share/JetBrains/PhpStorm{{ phpstorm_version }}"
+phpstorm_plugin_directory: "~/.local/share/JetBrains/{{ phpstorm_directory_name }}"
+phpstorm_download_url: "{{ phpstorm_download_mirror }}{{ phpstorm_install_file }}"

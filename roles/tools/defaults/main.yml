@@ -1,0 +1,4 @@
+configure_additional_zsh_tweaks: true
+
+git_username: ""
+git_email: ""

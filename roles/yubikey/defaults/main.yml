@@ -1,0 +1,2 @@
+# Use GPG for SSH, iow, 
+setup_yubikey_gpg_for_ssh: false

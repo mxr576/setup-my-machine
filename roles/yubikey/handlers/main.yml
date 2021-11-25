@@ -1,0 +1,3 @@
+---
+- name: gpg_agent_needs_restart
+  ansible.builtin.command: gpg-connect-agent killagent /bye

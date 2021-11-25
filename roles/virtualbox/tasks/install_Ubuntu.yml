@@ -1,0 +1,38 @@
+---
+# Install VirtualBox on Ubuntu
+
+- name: Identify Debian release string
+  ansible.builtin.shell: cat /etc/debian_version | awk '{split($0,a,"\/");print a[1]}'
+  register: debian_distribution_release_string
+
+- name: Set Debian release string as fact
+  set_fact:
+    debian_distribution_release_string: "{{ debian_distribution_release_string.stdout }}"
+    cacheable: yes
+
+- name: Install packages to allow apt to use a repository over HTTPS
+  package:
+    name: "{{ ubuntu_prereq_packages }}"
+    state: present
+  become: yes
+
+- name: add Virtualbox apt signing key
+  apt_key:
+    url: "{{ item }}"
+    state: present
+  with_items:
+    - https://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc
+    - https://download.virtualbox.org/virtualbox/debian/oracle_vbox_2016.asc
+  become: yes
+
+- name: setup VirtualBox apt repository on Ubuntu
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+    state: present
+  become: yes
+
+- name: install VirtualBox
+  package:
+    name: "virtualbox-{{ virtualbox_version }}"
+    state: present
+  become: yes

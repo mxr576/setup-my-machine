@@ -1,0 +1,4 @@
+---
+dependencies:
+  - role: web-dev-essentials
+  - role: treafik

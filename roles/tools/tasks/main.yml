@@ -1,0 +1,150 @@
+---
+- name: Finalize installation of powerlevel10k zsh theme
+  ansible.builtin.lineinfile:
+    name: ~/.zshrc
+    line: "source ~/.antigen/bundles/romkatv/powerlevel10k/powerlevel10k.zsh-theme"
+    state: present
+
+- name: Ensure dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - guake
+      - htop
+      - jq
+      - mc
+      - nano
+      - pwgen
+      - snapd
+    state: present
+  become: true
+
+- name: Ensure snap dependencies are installed that requires --classic
+  community.general.snap:
+    name:
+      - sublime-text
+    classic: yes
+  become: true
+
+- name: Ensure snap dependencies are installed that do not require --classic
+  community.general.snap:
+    name:
+      - flameshot
+      - yq
+      - postman
+    classic: yes
+  become: true
+
+- name: Force nano as default editor everywhere
+  ansible.builtin.blockinfile:
+    name: ~/.zshrc
+    block: |
+      # Preferred editor for local and remote sessions
+      if [[ -n $SSH_CONNECTION ]]; then
+        export EDITOR='nano'
+      else
+        export EDITOR='nano'
+      fi
+    state: present
+    marker: "# {mark} Force nano as default editor everywhere"
+  when: configure_additional_zsh_tweaks | bool
+
+- name: Enforce language in every environment
+  ansible.builtin.lineinfile:
+    name: ~/.zshrc
+    line: export LANG=en_US.UTF-8
+    state: present
+  when: configure_additional_zsh_tweaks | bool
+
+- name: Add shell history improvements
+  ansible.builtin.blockinfile:
+    name: ~/.zshrc
+    block: |
+      HISTFILE="$HOME/.zsh_history"
+      HISTSIZE=10000000
+      SAVEHIST=10000000
+
+      setopt BANG_HIST                 # Treat the '!' character specially during expansion.
+      setopt EXTENDED_HISTORY          # Write the history file in the ":start:elapsed;command" format.
+      setopt INC_APPEND_HISTORY        # Write to the history file immediately, not when the shell exits.
+      setopt SHARE_HISTORY             # Share history between all sessions.
+      setopt HIST_EXPIRE_DUPS_FIRST    # Expire duplicate entries first when trimming history.
+      setopt HIST_IGNORE_DUPS          # Don't record an entry that was just recorded again.
+      setopt HIST_IGNORE_ALL_DUPS      # Delete old recorded entry if new entry is a duplicate.
+      setopt HIST_FIND_NO_DUPS         # Do not display a line previously found.
+      setopt HIST_IGNORE_SPACE         # Don't record an entry starting with a space.
+      setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history file.
+      setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
+      setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
+      setopt HIST_BEEP                 # Beep when accessing nonexistent history.
+    state: present
+    marker: "# {mark} Add shell history improvements"
+  when: configure_additional_zsh_tweaks | bool
+
+- name: Add a quick alias for retriving my public IP
+  ansible.builtin.lineinfile:
+    name: ~/.zshrc
+    line: alias my-ip="curl ifconfig.co"
+    state: present
+  when: configure_additional_zsh_tweaks | bool
+
+- name: Add resursive dos2unix function
+  ansible.builtin.blockinfile:
+    name: ~/.zshrc
+    block: |
+      function dos2unixr() {
+        find "$1" -type f -print0 | xargs -0 dos2unix --
+      }
+    state: present
+    marker: "# {mark} Add resursive dos2unix function"
+  when: configure_additional_zsh_tweaks | bool
+
+- name: Add resursive clean-dsstore alias
+  ansible.builtin.lineinfile:
+    name: ~/.zshrc
+    line: alias clean-dsstore="find . -name '*.DS_Store' -type f -delete"
+    state: present
+  when: configure_additional_zsh_tweaks | bool
+
+- name: "GIT: Configure username"
+  community.general.git_config:
+    name: user.name
+    scope: global
+    value: "{{ git_username }}"
+  when: git_username
+
+- name: "GIT: Configure email"
+  community.general.git_config:
+    name: user.email
+    scope: global
+    value: "{{ git_email }}"
+  when: git_email
+
+- name: "GIT: Auto convert CRLF to LF"
+  community.general.git_config:
+    name: core.autocrlf
+    scope: global
+    value: "input"
+
+- name: "GIT: Ensure that CRLF conversion is safe"
+  community.general.git_config:
+    name: core.safecrlf
+    scope: global
+    value: "true"
+
+- name: "GIT: Pull must rebase"
+  community.general.git_config:
+    name: pull.rebase
+    scope: global
+    value: "true"
+
+- name: "GIT: Nano is the default editor"
+  community.general.git_config:
+    name: core.editor
+    scope: global
+    value: "nano"
+
+- name: "GIT: Default diff tool is Meld."
+  community.general.git_config:
+    name: diff.tool
+    scope: global
+    value: "meld"

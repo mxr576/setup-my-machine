@@ -1,0 +1,7 @@
+roles:
+- include: roles/web-dev-essentials/meta/requirements.yml
+- include: roles/tools/meta/requirements.yml
+- include: roles/pronovix/meta/requirements.yml
+
+collections:
+  - name: community.docker

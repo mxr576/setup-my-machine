@@ -1,0 +1,87 @@
+- hosts: all
+
+  collections:
+      - community.docker
+
+  pre_tasks:
+    # see: https://github.com/geerlingguy/ansible-role-docker/issues/299#issuecomment-957289694
+    - name: Identify Ubuntu on an Ubuntu flavor OS like LinuxMint
+      ansible.builtin.shell: sed 's/ID_LIKE=//;t;d' /etc/os-release | sed 's/./\U&/'
+      register: distribution_by_os_release
+
+    - name: Fix ansible_distribution on an Ubuntu flavor
+      set_fact:
+        ansible_distribution: "{{ distribution_by_os_release.stdout }}"
+        cacheable: yes
+      when: distribution_by_os_release.stdout is defined and ansible_distribution != "Ubuntu" and ansible_distribution != distribution_by_os_release.stdout
+
+    - name: Identify actual Ubuntu version on an Ubuntu flavor OS like LinuxMint
+      ansible.builtin.shell: sed 's/UBUNTU_CODENAME=//;t;d' /etc/os-release
+      register: distribution_release_by_os_release
+
+    - name: Fix ansible_distribution_release on an Ubuntu flavor
+      set_fact:
+        ansible_distribution_release: "{{ distribution_release_by_os_release.stdout }}"
+        cacheable: yes
+      when: distribution_release_by_os_release.stdout is defined and ansible_distribution_release != distribution_release_by_os_release.stdout
+
+    - name: Get distributor ID
+      ansible.builtin.shell: sed 's/^ID=//;t;d' /etc/os-release
+      register: os_distributor_id
+
+    - name: Set fact, is this LinuxMint
+      set_fact:
+        distribution_is_linuxmint: "{{ os_distributor_id.stdout | lower == 'linuxmint' }}"
+        cacheable: yes
+
+    # see: https://snapcraft.io/docs/installing-snap-on-linux-mint
+    - name: Unblock snapd install on Linuxmint
+      ansible.builtin.file:
+        path: /etc/apt/preferences.d/nosnap.pref
+        state: absent
+      become: true
+      when: distribution_is_linuxmint | bool
+
+    - name: Upgrade all apt packages
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+        force_apt_get: yes
+        cache_valid_time: 3600
+      register: apt_action
+      retries: 100
+      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
+      become: true
+      become_method: sudo
+
+  # vars: 
+  #   # set_fact FTW, it does not update the ansible_facts list, just the variable. Known issue (?)
+  #   # This is required by the crivetimihai.virtualization.virtualbox role that uses ansible_facts instead of ansible_ variable.
+  #   # For now we ignored that distribution_version referst to LinuxMint's version and not Ubuntu's.
+  #   ansible_correct_facts:
+  #     distribution: "{{ ansible_distribution }}"
+  #     distribution_release: "{{ ansible_distribution_release }}"
+  #   with_dict: "{{ ansible_facts | combine(ansible_correct_facts)}}"
+
+  roles:
+    - web-dev-essentials
+    - tools
+    - pronovix
+    - phpstorm-plugins
+    - yubikey
+
+  post_tasks:
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+      become: true
+      become_method: sudo
+
+    - name: Remove dependencies that are no longer required
+      apt:
+        autoremove: yes
+      become: true
+      become_method: sudo
+
+    # TODO Reboot machine?
+  

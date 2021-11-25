@@ -1,0 +1,31 @@
+
+- name: Set up GPG for SSH with a Black Yubikey 1/3
+  ansible.builtin.apt:
+    name:
+      - scdaemon
+      - yubikey-manager
+  become: true
+  when: setup_yubikey_gpg_for_ssh | bool
+
+- name: Set up GPG for SSH with a Black Yubikey 2/3
+  ansible.builtin.blockinfile:
+    name: ~/.gnupg/gpg-agent.conf
+    state: present
+    block: |
+      enable-ssh-support
+      default-cache-ttl 3600
+      default-cache-ttl-ssh 3600
+      max-cache-ttl 7200
+      max-cache-ttl-ssh 7200
+      pinentry-program /usr/bin/pinentry
+    create: true
+  when: setup_yubikey_gpg_for_ssh | bool
+  notify: gpg_agent_needs_restart
+
+- name: Set up GPG for SSH with a Black Yubikey 3/3
+  # .zshrc has to be reloaded to ensure antigen is available.
+  ansible.builtin.shell: >
+    source ~/.zshrc && antigen bundle gpg-agent && antigen apply
+  args:
+    executable: /bin/zsh
+  when: setup_yubikey_gpg_for_ssh | bool

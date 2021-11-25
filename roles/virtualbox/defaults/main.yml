@@ -1,0 +1,25 @@
+---
+# defaults file for virtualbox
+
+# Add users to 'vboxusers' group
+setup_users: yes
+
+# List of users to add to 'vboxusers' group
+vbox_users: []
+
+# VirtualBox major version to install
+virtualbox_version: "{{ virtualbox_version.split('.')[0] + '.' + virtualbox_version.split('.')[1] }}"
+
+# Full version number
+virtualbox_version_full: '{{ current_version }}'
+
+virtualbox_extension_pack_version: '{{ current_version }}'
+
+# Install extensions listed in virtualbox_extpacks_urls (requires license)
+install_extpacks: no
+
+# List of VirtualBox extensions to install
+virtualbox_extpack_urls:
+  - 'https://download.virtualbox.org/virtualbox/{{ current_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ current_version }}.vbox-extpack'
+
+virtualbox_extension_pack_license_hash: '33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c'

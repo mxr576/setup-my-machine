@@ -1,0 +1,4 @@
+hosts.yml
+# Ignore 3rd party roles for now.
+roles/*.*
+*.log
